@@ -1,0 +1,17 @@
+# Compiled objects / binaries — build from source instead
+*.o
+*.obj
+*.exe
+
+# Runtime state / backups written by the app
+voidtune_state.txt
+backup_*.reg
+
+# OS / editor
+Thumbs.db
+.DS_Store
+*.swp
+
+# Claude Code local config / auto-memory (personal, not shared with the team)
+.claude/settings.local.json
+.claude/memory/
