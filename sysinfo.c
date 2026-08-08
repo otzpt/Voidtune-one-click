@@ -1,5 +1,5 @@
 /**
- * sysinfo.c — Implementação da recolha de info do sistema
+ * sysinfo.c — System info collection implementation
  */
 
 #include "sysinfo.h"
@@ -11,7 +11,7 @@ void sysinfo_get(SysInfo *out)
     if (!out) return;
     memset(out, 0, sizeof(SysInfo));
 
-    /* ── Nome do SO ─────────────────────────────────────────── */
+    /* ── OS name ─────────────────────────────────────────────── */
     HKEY hKey;
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
@@ -23,7 +23,7 @@ void sysinfo_get(SysInfo *out)
         RegCloseKey(hKey);
     }
 
-    /* ── Nome da CPU (via registry) ─────────────────────────── */
+    /* ── CPU name (via registry) ─────────────────────────────── */
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
         "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
         0, KEY_READ, &hKey) == ERROR_SUCCESS)
@@ -34,11 +34,11 @@ void sysinfo_get(SysInfo *out)
         RegCloseKey(hKey);
     }
 
-    /* ── Cores e threads ────────────────────────────────────── */
+    /* ── Cores and threads ───────────────────────────────────── */
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     out->cpu_threads = (int)si.dwNumberOfProcessors;
-    /* cores físicos requerem WMI — por agora usa threads como aproximação */
+    /* physical cores would require WMI — use thread count as an approximation for now */
     out->cpu_cores = out->cpu_threads;
 
     /* ── RAM ────────────────────────────────────────────────── */
@@ -67,7 +67,7 @@ void sysinfo_print(const SysInfo *info)
     printf("  OS      : %s\n", info->os_name);
     printf("  CPU     : %s\n", info->cpu_name);
     printf("  Threads : %d\n", info->cpu_threads);
-    printf("  RAM     : %llu MB total / %llu MB livre\n",
+    printf("  RAM     : %llu MB total / %llu MB free\n",
            info->ram_total_mb, info->ram_free_mb);
-    printf("  Admin   : %s\n", info->is_admin ? "SIM" : "NAO (recomendado correr como Admin)");
+    printf("  Admin   : %s\n", info->is_admin ? "YES" : "NO (running as Administrator is recommended)");
 }

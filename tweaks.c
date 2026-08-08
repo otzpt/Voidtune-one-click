@@ -1,10 +1,10 @@
 /**
- * tweaks.c — Implementação do motor de tweaks
+ * tweaks.c — Tweak engine implementation
  *
- * Para adicionar um tweak novo:
- *   1. Declara as funções apply/revert aqui em cima (static int tweak_xxx_apply, etc.)
- *   2. Implementa-as
- *   3. Adiciona a entrada em g_tweaks[]
+ * To add a new tweak:
+ *   1. Declare the apply/revert functions up top (static int tweak_xxx_apply, etc.)
+ *   2. Implement them
+ *   3. Add the entry to g_tweaks[]
  */
 
 #include "tweaks.h"
@@ -16,7 +16,7 @@
 #define STATE_FILE "voidtune_state.txt"
 #define MAX_TWEAKS 64
 
-/* ── Protótipos das funções de tweak ─────────────────────────── */
+/* ── Tweak function prototypes ───────────────────────────────── */
 static int tweak_game_mode_apply(void);
 static int tweak_game_mode_revert(void);
 static int tweak_nagle_apply(void);
@@ -54,113 +54,115 @@ static int tweak_large_system_cache_revert(void);
 static int tweak_tcp_autotuning_apply(void);
 static int tweak_tcp_autotuning_revert(void);
 
-/* ── Array de tweaks — adiciona aqui ─────────────────────────── */
+/* ── Tweak array — add new entries here ──────────────────────── */
 static Tweak g_tweaks[] = {
     {
         1, "Game Mode",
-        "Ativa o Game Mode do Windows para priorizar processos de jogo",
+        "Enables Windows Game Mode to prioritize game processes",
         CAT_PERFORMANCE, SAFE, STATE_OFF,
         tweak_game_mode_apply, tweak_game_mode_revert
     },
     {
         2, "Disable Nagle",
-        "Desativa o algoritmo de Nagle para menor latencia de rede",
+        "Disables Nagle's algorithm for lower network latency",
         CAT_NETWORK, SAFE, STATE_OFF,
         tweak_nagle_apply, tweak_nagle_revert
     },
     {
         3, "Disable Telemetry",
-        "Remove servicos de telemetria e diagnostico da Microsoft",
+        "Removes Microsoft telemetry and diagnostic data collection",
         CAT_PRIVACY, SAFE, STATE_OFF,
         tweak_telemetry_apply, tweak_telemetry_revert
     },
     {
         4, "Timer Resolution",
-        "Define resolucao do timer para minimo disponivel (menor latencia)",
+        "Sets the timer resolution to the lowest available (lower latency)",
         CAT_PERFORMANCE, EXTREME, STATE_OFF,
         tweak_timer_apply, tweak_timer_revert
     },
     {
         5, "Disable HPET",
-        "Desativa High Precision Event Timer para menor DPC latency",
+        "Disables the High Precision Event Timer for lower DPC latency",
         CAT_PERFORMANCE, EXTREME, STATE_OFF,
         tweak_hpet_apply, tweak_hpet_revert
     },
     {
         6, "Disable Superfetch",
-        "Desativa o Superfetch para melhorar o desempenho do sistema",
+        "Disables Superfetch to improve system performance",
         CAT_PERFORMANCE, SAFE, STATE_OFF,
         tweak_superfetch_apply, tweak_superfetch_revert
     },
     {
         7, "Power Plan Ultra",
-        "Ativa plano de energia de alta performance",
+        "Switches to the High Performance power plan",
         CAT_PERFORMANCE, SAFE, STATE_OFF,
         tweak_powerplan_apply, tweak_powerplan_revert
     },
     {
         8, "Disable Xbox DVR",
-        "Desativa captura de jogo em background (Game Bar)",
+        "Disables background game-capture (Game Bar)",
         CAT_PERFORMANCE, SAFE, STATE_OFF,
         tweak_xboxdvr_apply, tweak_xboxdvr_revert
     },
     {
         9, "Visual FX Clean",
-        "Remove animacoes visuais desnecessarias do Explorer",
+        "Removes unnecessary Explorer visual animations",
         CAT_PERFORMANCE, SAFE, STATE_OFF,
         tweak_visualfx_apply, tweak_visualfx_revert
     },
     {
         10, "Disable Cortana",
-        "Desativa Cortana via politica de grupo",
+        "Disables Cortana via group policy",
         CAT_PRIVACY, SAFE, STATE_OFF,
         tweak_cortana_apply, tweak_cortana_revert
     },
     {
         11, "GPU Priority",
-        "Define prioridade da GPU para foco em desempenho",
+        "Sets GPU scheduling priority to favor foreground performance",
         CAT_PERFORMANCE, SAFE, STATE_OFF,
         tweak_gpu_priority_apply, tweak_gpu_priority_revert
     },
     {
         12, "Network Throttling",
-        "Desativa limitacao de largura de banda do sistema",
+        "Disables the system's network bandwidth throttling",
         CAT_NETWORK, SAFE, STATE_OFF,
         tweak_network_throttling_apply, tweak_network_throttling_revert
     },
     {
         13, "Windows Update Pause",
-        "Pausa atualizacoes do Windows por 365 dias",
+        "Pauses Windows Updates for 365 days",
         CAT_SERVICES, SAFE, STATE_OFF,
         tweak_windows_update_apply, tweak_windows_update_revert
     },
     {
         14, "Disable Startup Delay",
-        "Remove delay de inicializacao de aplicativos no boot",
+        "Removes the app-startup delay at boot",
         CAT_PERFORMANCE, SAFE, STATE_OFF,
         tweak_startup_delay_apply, tweak_startup_delay_revert
     },
     {
         15, "Fast Menu Show",
-        "Reduz delay de exibicao dos menus do Windows",
+        "Reduces the display delay for Windows menus",
         CAT_VISUALS, SAFE, STATE_OFF,
         tweak_menushowdelay_apply, tweak_menushowdelay_revert
     },
     {
         16, "DNS Cache",
-        "Aumenta cache DNS para respostas mais rapidas",
+        "Increases the DNS cache lifetime for faster repeat lookups",
         CAT_NETWORK, SAFE, STATE_OFF,
         tweak_dns_cache_apply, tweak_dns_cache_revert
     },
     {
         17, "Large System Cache",
-        "Aumenta cache do sistema para melhor desempenho",
+        "Increases the system file cache for better throughput",
         CAT_PERFORMANCE, EXTREME, STATE_OFF,
         tweak_large_system_cache_apply, tweak_large_system_cache_revert
     },
     {
-        18, "TCP AutoTuning",
-        "Otimiza parametros TCP para maior throughput",
+        18, "TCP Auto-Tuning Reset",
+        "Resets TCP receive-window auto-tuning to the Windows default "
+        "(normal) — fixes it if another tool, VPN client, or router "
+        "compatibility mode left it disabled or restricted",
         CAT_NETWORK, SAFE, STATE_OFF,
         tweak_tcp_autotuning_apply, tweak_tcp_autotuning_revert
     },
@@ -168,7 +170,7 @@ static Tweak g_tweaks[] = {
 
 static int g_count = sizeof(g_tweaks) / sizeof(g_tweaks[0]);
 
-/* ── API pública ─────────────────────────────────────────────── */
+/* ── Public API ──────────────────────────────────────────────── */
 
 void tweaks_init(void)
 {
@@ -227,18 +229,18 @@ void tweaks_save_state(void)
 void tweaks_load_state(void)
 {
     FILE *f = fopen(STATE_FILE, "r");
-    if (!f) return;  /* sem ficheiro = todos OFF, tudo bem */
+    if (!f) return;  /* no file = everything OFF, that's fine */
 
     char line[256];
     while (fgets(line, sizeof(line), f)) {
-        /* formato: "Game Mode=1" */
+        /* format: "Game Mode=1" */
         char *eq = strchr(line, '=');
         if (!eq) continue;
 
-        *eq = '\0';  /* divide a string em nome + valor */
+        *eq = '\0';  /* splits the string into name + value */
         int val = atoi(eq + 1);
 
-        /* procura o tweak pelo nome */
+        /* looks up the tweak by name */
         for (int i = 0; i < g_count; i++) {
             if (strcmp(g_tweaks[i].name, line) == 0) {
                 g_tweaks[i].state = val ? STATE_ON : STATE_OFF;
@@ -272,7 +274,7 @@ const char *tweak_state_str(TweakState s)
     return (s == STATE_ON) ? "ON" : "OFF";
 }
 
-/* ── Função auxiliar para executar comandos ──────────────────── */
+/* ── Helper to run commands ──────────────────────────────────── */
 static int run_command(const char *cmd)
 {
     STARTUPINFOA si = { sizeof(si) };
@@ -288,7 +290,7 @@ static int run_command(const char *cmd)
     return 0;
 }
 
-/* ── Implementação dos tweaks ────────────────────────────────── */
+/* ── Tweak implementations ───────────────────────────────────── */
 
 static int tweak_game_mode_apply(void)
 {
@@ -397,7 +399,7 @@ static int tweak_timer_revert(void)
 
 static int tweak_hpet_apply(void)
 {
-    /* Desativa HPET e Dynamic Tick */
+    /* Disables HPET and Dynamic Tick */
     run_command("bcdedit /set useplatformclock false");
     return run_command("bcdedit /set disabledynamictick yes");
 }
@@ -439,13 +441,13 @@ static int tweak_xboxdvr_apply(void)
     RegResult r = reg_set_dword(HKEY_CURRENT_USER,
         "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
         "AppCaptureEnabled", 0);
-    
+
     if (r != REG_OK) return -1;
-    
+
     r = reg_set_dword(HKEY_CURRENT_USER,
         "System\\GameConfigStore",
         "GameDVR_Enabled", 0);
-    
+
     return (r == REG_OK) ? 0 : -1;
 }
 
@@ -454,11 +456,11 @@ static int tweak_xboxdvr_revert(void)
     reg_set_dword(HKEY_CURRENT_USER,
         "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\GameDVR",
         "AppCaptureEnabled", 1);
-    
+
     reg_set_dword(HKEY_CURRENT_USER,
         "System\\GameConfigStore",
         "GameDVR_Enabled", 1);
-    
+
     return 0;
 }
 
@@ -496,21 +498,21 @@ static int tweak_cortana_revert(void)
     return (r == REG_OK) ? 0 : -1;
 }
 
-/* ── Novos tweaks ────────────────────────────────────────────── */
+/* ── Newer tweaks ─────────────────────────────────────────────── */
 
 static int tweak_gpu_priority_apply(void)
 {
-    /* Define GPU scheduling para alta prioridade */
+    /* Sets GPU scheduling to high priority */
     RegResult r = reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
         "SystemResponsiveness", 0);
-    
+
     if (r != REG_OK) return -1;
-    
+
     r = reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
         "GPU Priority", 8);
-    
+
     return (r == REG_OK) ? 0 : -1;
 }
 
@@ -519,17 +521,17 @@ static int tweak_gpu_priority_revert(void)
     reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
         "SystemResponsiveness", 20);
-    
+
     reg_delete_value(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile\\Tasks\\Games",
         "GPU Priority");
-    
+
     return 0;
 }
 
 static int tweak_network_throttling_apply(void)
 {
-    /* Desativa throttling de rede */
+    /* Disables network throttling */
     RegResult r = reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
         "NetworkThrottlingIndex", 0xFFFFFFFF);
@@ -538,7 +540,7 @@ static int tweak_network_throttling_apply(void)
 
 static int tweak_network_throttling_revert(void)
 {
-    /* Valor padrão: 10 */
+    /* Default value: 10 */
     RegResult r = reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Multimedia\\SystemProfile",
         "NetworkThrottlingIndex", 10);
@@ -547,18 +549,18 @@ static int tweak_network_throttling_revert(void)
 
 static int tweak_windows_update_apply(void)
 {
-    /* Pausa updates até 2035 */
+    /* Pauses updates until 2035 */
     RegResult r = reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\WindowsUpdate\\UX\\Settings",
         "PauseUpdatesExpiryTime", 0x7FFFFFFF);
-    
+
     if (r != REG_OK) return -1;
-    
-    /* Desativa updates automáticos */
+
+    /* Disables automatic updates */
     r = reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
         "NoAutoUpdate", 1);
-    
+
     return (r == REG_OK) ? 0 : -1;
 }
 
@@ -567,17 +569,17 @@ static int tweak_windows_update_revert(void)
     reg_delete_value(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\WindowsUpdate\\UX\\Settings",
         "PauseUpdatesExpiryTime");
-    
+
     reg_set_dword(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU",
         "NoAutoUpdate", 0);
-    
+
     return 0;
 }
 
 static int tweak_startup_delay_apply(void)
 {
-    /* Remove delay de inicialização */
+    /* Removes the startup delay */
     RegResult r = reg_set_dword(HKEY_CURRENT_USER,
         "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Serialize",
         "StartupDelayInMSec", 0);
@@ -594,7 +596,7 @@ static int tweak_startup_delay_revert(void)
 
 static int tweak_menushowdelay_apply(void)
 {
-    /* Reduz delay do menu para 0ms */
+    /* Reduces the menu delay to 0ms */
     RegResult r = reg_set_dword(HKEY_CURRENT_USER,
         "Control Panel\\Desktop",
         "MenuShowDelay", 0);
@@ -603,7 +605,7 @@ static int tweak_menushowdelay_apply(void)
 
 static int tweak_menushowdelay_revert(void)
 {
-    /* Valor padrão: 400ms */
+    /* Default value: 400ms */
     RegResult r = reg_set_dword(HKEY_CURRENT_USER,
         "Control Panel\\Desktop",
         "MenuShowDelay", 400);
@@ -613,15 +615,15 @@ static int tweak_menushowdelay_revert(void)
 static int tweak_dns_cache_apply(void)
 {
     int errors = 0;
-    
+
     errors += (reg_set_dword(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters",
         "MaxCacheTtl", 86400) != REG_OK);
-    
+
     errors += (reg_set_dword(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters",
         "MaxNegativeCacheTtl", 0) != REG_OK);
-    
+
     return errors == 0 ? 0 : -1;
 }
 
@@ -630,11 +632,11 @@ static int tweak_dns_cache_revert(void)
     reg_delete_value(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters",
         "MaxCacheTtl");
-    
+
     reg_delete_value(HKEY_LOCAL_MACHINE,
         "SYSTEM\\CurrentControlSet\\Services\\Dnscache\\Parameters",
         "MaxNegativeCacheTtl");
-    
+
     return 0;
 }
 
@@ -654,6 +656,31 @@ static int tweak_large_system_cache_revert(void)
     return (r == REG_OK) ? 0 : -1;
 }
 
+/*
+ * TCP Auto-Tuning Reset.
+ *
+ * "normal" IS the real Windows out-of-box default (verified against
+ * Microsoft's documented autotuninglevel tiers: disabled < highlyrestricted
+ * < restricted < normal < experimental). There is no safe tier above
+ * "normal" — "experimental" is explicitly documented as not recommended
+ * for general use and can degrade performance in common scenarios, so it
+ * does not belong in a SAFE one-click tweak. The real, honest job of this
+ * tweak is fixing a receive-window scaling setting that some third-party
+ * "network optimizer" tool, VPN client, or router compatibility mode
+ * disabled/restricted, not squeezing out extra throughput.
+ *
+ * apply/revert are therefore not literal opposites the way the registry
+ * tweaks above are (apply pushes a "better" value, revert restores the
+ * pre-tweak default). netsh's global autotuning level has no state
+ * capture here, unlike the registry-backed tweaks, so revert steps back
+ * one tier to "restricted" — a distinct, still-documented-safe value —
+ * rather than restoring the literal prior setting.
+ *
+ * SIMPLIFICATION: no real prior-state capture. Ceiling: revert always
+ * lands on "restricted" regardless of what the level was before apply
+ * ran. Upgrade path: parse `netsh int tcp show global` before apply and
+ * store the real prior level, then restore that exact value on revert.
+ */
 static int tweak_tcp_autotuning_apply(void)
 {
     return run_command("netsh int tcp set global autotuninglevel=normal");
@@ -661,5 +688,5 @@ static int tweak_tcp_autotuning_apply(void)
 
 static int tweak_tcp_autotuning_revert(void)
 {
-    return run_command("netsh int tcp set global autotuninglevel=normal");
+    return run_command("netsh int tcp set global autotuninglevel=restricted");
 }

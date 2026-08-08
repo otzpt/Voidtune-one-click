@@ -1,7 +1,7 @@
 /**
- * registry.h — Abstração do Windows Registry
- * Todas as operações de registry passam por aqui.
- * Nunca chamas RegSetValueEx diretamente no resto do código.
+ * registry.h — Windows Registry abstraction
+ * All registry operations go through here.
+ * Never call RegSetValueEx directly anywhere else in the codebase.
  */
 
 #ifndef REGISTRY_H
@@ -9,7 +9,7 @@
 
 #include <windows.h>
 
-/* Resultado de uma operação de registry */
+/* Result of a registry operation */
 typedef enum {
     REG_OK = 0,
     REG_ERR_OPEN,
@@ -19,32 +19,32 @@ typedef enum {
 } RegResult;
 
 /*
- * reg_set_dword - Escreve um valor DWORD numa chave do registry
+ * reg_set_dword - Writes a DWORD value to a registry key
  * @hive:    HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER, etc.
- * @path:    caminho da chave, ex: "SYSTEM\\CurrentControlSet\\..."
- * @name:    nome do valor
- * @value:   valor DWORD a escrever
+ * @path:    key path, e.g. "SYSTEM\\CurrentControlSet\\..."
+ * @name:    value name
+ * @value:   DWORD value to write
  *
- * Retorna REG_OK em caso de sucesso.
+ * Returns REG_OK on success.
  */
 RegResult reg_set_dword(HKEY hive, const char *path,
                         const char *name, DWORD value);
 
 /*
- * reg_delete_value - Remove um valor do registry
- * Retorna REG_OK ou REG_ERR_NOT_FOUND se já não existia.
+ * reg_delete_value - Removes a value from the registry
+ * Returns REG_OK, or REG_ERR_NOT_FOUND if it didn't exist.
  */
 RegResult reg_delete_value(HKEY hive, const char *path, const char *name);
 
 /*
- * reg_get_dword - Lê um valor DWORD do registry
- * @out: ponteiro onde o valor lido é guardado
- * Retorna REG_OK ou REG_ERR_NOT_FOUND.
+ * reg_get_dword - Reads a DWORD value from the registry
+ * @out: pointer where the read value is stored
+ * Returns REG_OK or REG_ERR_NOT_FOUND.
  */
 RegResult reg_get_dword(HKEY hive, const char *path,
                         const char *name, DWORD *out);
 
-/* Traduz um RegResult para string legível */
+/* Translates a RegResult to a human-readable string */
 const char *reg_result_str(RegResult r);
 
 #endif /* REGISTRY_H */

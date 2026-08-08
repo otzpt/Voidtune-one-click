@@ -1,12 +1,12 @@
 /**
- * registry.c — Implementação da abstração do Windows Registry
+ * registry.c — Windows Registry abstraction implementation
  * Compiled: gcc -Wall -Wextra -o voidtune *.c -ladvapi32
  */
 
 #include "registry.h"
 #include <stdio.h>
 
-/* ── Implementação ───────────────────────────────────────────── */
+/* ── Implementation ──────────────────────────────────────────── */
 
 RegResult reg_set_dword(HKEY hive, const char *path,
                         const char *name, DWORD value)
@@ -14,7 +14,7 @@ RegResult reg_set_dword(HKEY hive, const char *path,
     HKEY key;
     LONG res;
 
-    /* Abre ou cria a chave com permissão de escrita */
+    /* Opens or creates the key with write permission */
     res = RegCreateKeyExA(
         hive, path,
         0, NULL, REG_OPTION_NON_VOLATILE,
@@ -77,10 +77,10 @@ const char *reg_result_str(RegResult r)
 {
     switch (r) {
         case REG_OK:            return "OK";
-        case REG_ERR_OPEN:      return "Erro ao abrir chave";
-        case REG_ERR_SET:       return "Erro ao escrever valor";
-        case REG_ERR_DELETE:    return "Erro ao apagar valor";
-        case REG_ERR_NOT_FOUND: return "Valor nao encontrado";
-        default:                return "Erro desconhecido";
+        case REG_ERR_OPEN:      return "Failed to open key";
+        case REG_ERR_SET:       return "Failed to write value";
+        case REG_ERR_DELETE:    return "Failed to delete value";
+        case REG_ERR_NOT_FOUND: return "Value not found";
+        default:                return "Unknown error";
     }
 }

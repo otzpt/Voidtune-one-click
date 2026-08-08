@@ -4,10 +4,10 @@
  * runs anywhere Windows runs (WinPE, servers, stripped installs).
  * The full GUI flagship is the C# / WinUI 3 edition.
  *
- * Compilar (MSYS2 UCRT64):
+ * Build (MSYS2 UCRT64):
  *   gcc -Wall -Wextra -o voidtune.exe main.c tweaks.c registry.c sysinfo.c -ladvapi32
  *
- * Ou simplesmente: make
+ * Or simply: make
  */
 
 #include <stdio.h>
@@ -18,9 +18,9 @@
 #include "tweaks.h"
 #include "sysinfo.h"
 
-#define VT_VERSION "0.1-c"
+#define VT_VERSION "0.0.1"
 
-/* ── Protótipos internos ─────────────────────────────────────── */
+/* ── Internal prototypes ─────────────────────────────────────── */
 static void clear_screen(void);
 static void print_header(void);
 static void print_separator(void);
@@ -33,21 +33,21 @@ static int  read_int(const char *prompt);
 /* ── Entry point ─────────────────────────────────────────────── */
 int main(void)
 {
-    /* Activa suporte a UTF-8 e cores ANSI na consola do Windows */
+    /* Enables UTF-8 and ANSI color support on the Windows console */
     SetConsoleOutputCP(CP_UTF8);
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD mode;
     GetConsoleMode(hOut, &mode);
     SetConsoleMode(hOut, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 
-    /* Inicializa o motor de tweaks (carrega estados do disco) */
+    /* Initializes the tweak engine (loads state from disk) */
     tweaks_init();
 
     menu_main();
     return EXIT_SUCCESS;
 }
 
-/* ── Utilitários de UI ───────────────────────────────────────── */
+/* ── UI utilities ─────────────────────────────────────────────── */
 
 static void clear_screen(void)
 {
@@ -56,7 +56,7 @@ static void clear_screen(void)
 
 static void print_separator(void)
 {
-    printf("\033[38;5;240m");  /* cinzento escuro */
+    printf("\033[38;5;240m");  /* dark grey */
     printf("  ────────────────────────────────────────────────────\n");
     printf("\033[0m");
 }
@@ -64,7 +64,7 @@ static void print_separator(void)
 static void print_header(void)
 {
     printf("\n");
-    printf("\033[35m");  /* roxo */
+    printf("\033[35m");  /* purple */
     printf("  ██╗   ██╗ ██████╗ ██╗██████╗ ████████╗██╗   ██╗███╗   ██╗███████╗\n");
     printf("  ██║   ██║██╔═══██╗██║██╔══██╗╚══██╔══╝██║   ██║████╗  ██║██╔════╝\n");
     printf("  ██║   ██║██║   ██║██║██║  ██║   ██║   ██║   ██║██╔██╗ ██║█████╗  \n");
@@ -75,7 +75,7 @@ static void print_header(void)
     printf("\033[38;5;240m  ONE-CLICK OPTIMIZER · v%s · @OTZPT_DEV · GPL v3\033[0m\n\n", VT_VERSION);
 }
 
-/* ── Menu principal ──────────────────────────────────────────── */
+/* ── Main menu ────────────────────────────────────────────────── */
 static void menu_main(void)
 {
     int choice;
@@ -85,10 +85,10 @@ static void menu_main(void)
         print_header();
         print_separator();
 
-        printf("  \033[35m[1] OTIMIZAR AGORA\033[0m  \033[38;5;240m(one-click - todos os SAFE)\033[0m\n");
+        printf("  \033[35m[1] OPTIMIZE NOW\033[0m  \033[38;5;240m(one-click - all SAFE tweaks)\033[0m\n");
         printf("  \033[37m[2]\033[0m Tweaks (manual)\n");
-        printf("  \033[37m[3]\033[0m Informacao do Sistema\n");
-        printf("  \033[37m[0]\033[0m Sair\n\n");
+        printf("  \033[37m[3]\033[0m System Information\n");
+        printf("  \033[37m[0]\033[0m Exit\n\n");
 
         print_separator();
         choice = read_int("  > ");
@@ -98,55 +98,55 @@ static void menu_main(void)
             case 2: menu_tweaks();  break;
             case 3: menu_sysinfo(); break;
             case 0:
-                printf("\n  VOIDTUNE encerrado.\n\n");
+                printf("\n  VOIDTUNE closed.\n\n");
                 return;
             default:
-                printf("\n  \033[33mOpcao invalida.\033[0m\n");
+                printf("\n  \033[33mInvalid option.\033[0m\n");
                 Sleep(800);
         }
     }
 }
 
-/* ── One-click: aplica todos os tweaks SAFE de uma vez ───────── */
+/* ── One-click: applies every SAFE tweak at once ─────────────── */
 static void menu_oneclick(void)
 {
     clear_screen();
     print_header();
 
-    printf("  \033[35m// OTIMIZACAO AUTOMATICA\033[0m\n\n");
+    printf("  \033[35m// AUTOMATIC OPTIMIZATION\033[0m\n\n");
     print_separator();
-    printf("  Aplica todos os tweaks \033[32mSAFE\033[0m de uma vez.\n");
-    printf("  Tudo reversivel no menu Tweaks. Corre como Administrador.\n\n");
-    printf("  Continuar? [s/N] ");
+    printf("  Applies every \033[32mSAFE\033[0m tweak at once.\n");
+    printf("  Everything is reversible from the Tweaks menu. Run as Administrator.\n\n");
+    printf("  Continue? [y/N] ");
 
     char resp[8];
     if (!fgets(resp, sizeof(resp), stdin)) return;
-    if (resp[0] != 's' && resp[0] != 'S') return;
+    if (resp[0] != 'y' && resp[0] != 'Y') return;
 
     int total = tweaks_count(), applied = 0, failed = 0, already = 0;
     printf("\n");
     for (int i = 0; i < total; i++) {
         Tweak *t = tweaks_get(i);
-        if (t->level != SAFE) continue;            /* so os seguros no one-click */
+        if (t->level != SAFE) continue;            /* only SAFE tweaks in one-click */
         if (t->state == STATE_ON) { already++; continue; }
 
         printf("  \033[38;5;240m>\033[0m %-24s ", t->name);
-        if (tweaks_apply(i) == 0) { printf("\033[32mOK\033[0m\n");    applied++; }
-        else                      { printf("\033[31mfalhou\033[0m\n"); failed++;  }
+        if (tweaks_apply(i) == 0) { printf("\033[32mOK\033[0m\n");     applied++; }
+        else                      { printf("\033[31mfailed\033[0m\n"); failed++;  }
     }
 
     printf("\n");
     print_separator();
-    printf("  \033[32m%d aplicados\033[0m", applied);
-    if (already) printf(" \033[38;5;240m- %d ja activos\033[0m", already);
-    if (failed)  printf(" - \033[31m%d falharam\033[0m", failed);
-    printf("\n  Reinicia o PC para efeito completo.\n\n");
+    printf("  \033[32m%d applied\033[0m", applied);
+    if (already) printf(" \033[38;5;240m- %d already active\033[0m", already);
+    if (failed)  printf(" - \033[31m%d failed\033[0m", failed);
+    printf("\n  Reboot for the changes to take full effect.\n\n");
     print_separator();
 
-    read_int("  [Enter para voltar] > ");
+    read_int("  [Enter to go back] > ");
 }
 
-/* ── Menu de tweaks ──────────────────────────────────────────── */
+/* ── Tweaks menu ──────────────────────────────────────────────── */
 static void menu_tweaks(void)
 {
     int choice;
@@ -159,11 +159,11 @@ static void menu_tweaks(void)
         printf("  \033[35m// TWEAKS\033[0m\n\n");
         print_separator();
 
-        /* Lista todos os tweaks */
+        /* Lists every tweak */
         for (int i = 0; i < total; i++) {
             Tweak *t = tweaks_get(i);
 
-            /* Cor do estado: verde = ON, cinzento = OFF */
+            /* State color: green = ON, grey = OFF */
             const char *state_color = (t->state == STATE_ON)
                 ? "\033[32m" : "\033[38;5;240m";
             const char *level_color = (t->level == EXTREME)
@@ -179,7 +179,7 @@ static void menu_tweaks(void)
         }
 
         print_separator();
-        printf("  Numero do tweak para toggle | \033[37m[0]\033[0m Voltar\n\n");
+        printf("  Enter a tweak number to toggle it | \033[37m[0]\033[0m Back\n\n");
 
         choice = read_int("  > ");
 
@@ -187,46 +187,46 @@ static void menu_tweaks(void)
 
         int idx = choice - 1;
         if (idx < 0 || idx >= total) {
-            printf("\n  \033[33mOpcao invalida.\033[0m\n");
+            printf("\n  \033[33mInvalid option.\033[0m\n");
             Sleep(800);
             continue;
         }
 
         Tweak *t = tweaks_get(idx);
 
-        /* Warning para tweaks EXTREME */
+        /* Warning for EXTREME tweaks */
         if (t->level == EXTREME && t->state == STATE_OFF) {
-            printf("\n  \033[31m[EXTREME]\033[0m Este tweak e agressivo. Tens a certeza? [s/N] ");
+            printf("\n  \033[31m[EXTREME]\033[0m This tweak is aggressive. Are you sure? [y/N] ");
             char resp[8];
             fgets(resp, sizeof(resp), stdin);
-            if (resp[0] != 's' && resp[0] != 'S') continue;
+            if (resp[0] != 'y' && resp[0] != 'Y') continue;
         }
 
         int res;
         if (t->state == STATE_OFF) {
-            printf("\n  A aplicar \033[35m%s\033[0m...\n", t->name);
+            printf("\n  Applying \033[35m%s\033[0m...\n", t->name);
             res = tweaks_apply(idx);
         } else {
-            printf("\n  A reverter \033[35m%s\033[0m...\n", t->name);
+            printf("\n  Reverting \033[35m%s\033[0m...\n", t->name);
             res = tweaks_revert(idx);
         }
 
         if (res == 0)
             printf("  \033[32mOK\033[0m\n");
         else
-            printf("  \033[31mErro. Verifica se correste como Administrador.\033[0m\n");
+            printf("  \033[31mError. Check that you're running as Administrator.\033[0m\n");
 
         Sleep(1000);
     }
 }
 
-/* ── Menu de info do sistema ─────────────────────────────────── */
+/* ── System info menu ─────────────────────────────────────────── */
 static void menu_sysinfo(void)
 {
     clear_screen();
     print_header();
 
-    printf("  \033[35m// SISTEMA\033[0m\n\n");
+    printf("  \033[35m// SYSTEM\033[0m\n\n");
     print_separator();
 
     SysInfo info;
@@ -235,18 +235,18 @@ static void menu_sysinfo(void)
 
     print_separator();
 
-    /* Mostra tweaks activos */
+    /* Shows active tweaks */
     int active = 0;
     for (int i = 0; i < tweaks_count(); i++)
         if (tweaks_get(i)->state == STATE_ON) active++;
 
-    printf("  Tweaks activos : \033[35m%d\033[0m / %d\n\n", active, tweaks_count());
+    printf("  Active tweaks : \033[35m%d\033[0m / %d\n\n", active, tweaks_count());
     print_separator();
 
-    read_int("  [Enter para voltar] > ");
+    read_int("  [Enter to go back] > ");
 }
 
-/* ── Lê um inteiro da consola de forma segura ────────────────── */
+/* ── Safely reads an integer from the console ────────────────── */
 static int read_int(const char *prompt)
 {
     char buf[32];

@@ -1,24 +1,24 @@
 /**
- * backup.h — Backup do Windows Registry
- * Porta de MakeBackup() em core/helpers.ps1 do VOIDTUNE v0.8V
+ * backup.h — Windows Registry backup
+ * Ported from MakeBackup() in core/helpers.ps1 of VOIDTUNE v0.8V
  * Copyright (C) 2026 @OTZPT — GPL v3
  *
- * Exporta as chaves de registry afectadas pelos tweaks para um
- * ficheiro .reg com timestamp, que pode ser importado em qualquer
- * altura para restaurar o estado anterior.
+ * Exports the registry keys touched by the tweaks to a timestamped
+ * .reg file, which can be imported at any time to restore the prior
+ * state.
  */
 
 #ifndef BACKUP_H
 #define BACKUP_H
 
 /*
- * backup_create - cria um ficheiro .reg na pasta corrente.
+ * backup_create - creates a .reg file in the current folder.
  *
- * @note     : sufixo descritivo, ex: "manual", "pre-apply"
- * @out_path : buffer onde o caminho do ficheiro criado é escrito
- * @out_size : tamanho do buffer out_path
+ * @note     : descriptive suffix, e.g. "manual", "pre-apply"
+ * @out_path : buffer where the path of the created file is written
+ * @out_size : size of the out_path buffer
  *
- * Retorna 1 em sucesso, 0 em erro.
+ * Returns 1 on success, 0 on error.
  */
 int backup_create(const char *note, char *out_path, int out_size);
 

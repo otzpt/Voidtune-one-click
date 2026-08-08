@@ -1,16 +1,16 @@
 /**
- * tweaks.h — Motor de tweaks do VOIDTUNE C
+ * tweaks.h — VOIDTUNE C tweak engine
  *
- * Cada tweak é uma struct com nome, descrição, categoria,
- * e dois ponteiros de função: apply() e revert().
- * Para adicionar um tweak novo: define as duas funções em tweaks.c
- * e adiciona a entrada no array g_tweaks[].
+ * Each tweak is a struct with a name, description, category,
+ * and two function pointers: apply() and revert().
+ * To add a new tweak: define the two functions in tweaks.c
+ * and add the entry to the g_tweaks[] array.
  */
 
 #ifndef TWEAKS_H
 #define TWEAKS_H
 
-/* Categorias de tweak */
+/* Tweak categories */
 typedef enum {
     CAT_PERFORMANCE = 0,
     CAT_PRIVACY,
@@ -19,23 +19,23 @@ typedef enum {
     CAT_VISUALS
 } TweakCategory;
 
-/* Nível de risco */
+/* Risk level */
 typedef enum {
     SAFE = 0,
     EXTREME
 } TweakLevel;
 
-/* Estado actual do tweak */
+/* Current tweak state */
 typedef enum {
     STATE_OFF = 0,
     STATE_ON
 } TweakState;
 
 /*
- * Tweak — representa um tweak individual
+ * Tweak — represents a single tweak
  *
- * apply()  : aplica o tweak, retorna 0 em sucesso
- * revert() : reverte o tweak, retorna 0 em sucesso
+ * apply()  : applies the tweak, returns 0 on success
+ * revert() : reverts the tweak, returns 0 on success
  */
 typedef struct {
     int           id;
@@ -43,35 +43,35 @@ typedef struct {
     const char   *desc;
     TweakCategory category;
     TweakLevel    level;
-    TweakState    state;        /* carregado do ficheiro de estado */
+    TweakState    state;        /* loaded from the state file */
     int         (*apply)(void);
     int         (*revert)(void);
 } Tweak;
 
-/* ── API pública ─────────────────────────────────────────────── */
+/* ── Public API ──────────────────────────────────────────────── */
 
-/* Inicializa o motor — carrega estados do disco */
+/* Initializes the engine — loads state from disk */
 void tweaks_init(void);
 
-/* Número total de tweaks disponíveis */
+/* Total number of available tweaks */
 int tweaks_count(void);
 
-/* Devolve ponteiro para o tweak pelo índice (0-based) */
+/* Returns a pointer to the tweak at this index (0-based) */
 Tweak *tweaks_get(int index);
 
-/* Aplica um tweak pelo índice — atualiza state e guarda em disco */
+/* Applies a tweak by index — updates state and saves to disk */
 int tweaks_apply(int index);
 
-/* Reverte um tweak pelo índice — atualiza state e guarda em disco */
+/* Reverts a tweak by index — updates state and saves to disk */
 int tweaks_revert(int index);
 
-/* Guarda todos os estados em voidtune_state.txt */
+/* Saves all states to voidtune_state.txt */
 void tweaks_save_state(void);
 
-/* Carrega estados de voidtune_state.txt */
+/* Loads states from voidtune_state.txt */
 void tweaks_load_state(void);
 
-/* Strings legíveis para os enums */
+/* Human-readable strings for the enums */
 const char *tweak_category_str(TweakCategory c);
 const char *tweak_level_str(TweakLevel l);
 const char *tweak_state_str(TweakState s);

@@ -1,6 +1,6 @@
 /**
- * services.h — Gestão de serviços do Windows
- * Porta de modules/data.ps1 ($SVCS_DATA) do VOIDTUNE v0.8V
+ * services.h — Windows service management
+ * Ported from modules/data.ps1 ($SVCS_DATA) of VOIDTUNE v0.8V
  * Copyright (C) 2026 @OTZPT — GPL v3
  */
 
@@ -16,26 +16,26 @@ typedef enum {
     SVC_MANUAL
 } ServiceState;
 
-/* Número total de serviços na lista */
+/* Total number of services in the list */
 int services_count(void);
 
-/* Nome e descrição do serviço pelo índice */
+/* Name and description of the service at this index */
 const char *services_get_name(int index);
 const char *services_get_desc(int index);
 
-/* Estado actual do serviço (consulta o SCM) */
+/* Current state of the service (queries the SCM) */
 ServiceState services_get_state(int index);
 
-/* Para e desactiva o serviço; retorna 0 em sucesso */
+/* Stops and disables the service; returns 0 on success */
 int services_disable(int index);
 
-/* Reativa e inicia o serviço; retorna 0 em sucesso */
+/* Re-enables and starts the service; returns 0 on success */
 int services_enable(int index);
 
-/* Imprime a lista completa na consola com estado a cores */
+/* Prints the full list to the console with colored state */
 void services_print_all(void);
 
-/* String legível para ServiceState */
+/* Human-readable string for a ServiceState */
 const char *service_state_str(ServiceState s);
 
 #endif /* SERVICES_H */

@@ -1,33 +1,33 @@
-# VOIDTUNE C — Guia de Desenvolvimento
+# VOIDTUNE C — Development Guide
 
-## Compilar
+## Build
 ```bash
-cd "/c/Users/mrjs1/OneDrive/Documentos/my optimizer/VOIDTUNE C edition"
+cd "/c/path/to/VOIDTUNE C edition"
 mingw32-make
 ./voidtune.exe
 ```
 
 ---
 
-## Adicionar um tweak novo
+## Adding a new tweak
 
-### 1. Declara as funções no topo de `tweaks.c`
+### 1. Declare the functions at the top of `tweaks.c`
 ```c
 static int tweak_superfetch_apply(void);
 static int tweak_superfetch_revert(void);
 ```
 
-### 2. Adiciona a entrada no array `g_tweaks[]`
+### 2. Add the entry to the `g_tweaks[]` array
 ```c
 {
     6, "Disable SuperFetch",
-    "Desativa SysMain para reduzir uso de disco em background",
+    "Disables SysMain to reduce background disk usage",
     CAT_PERFORMANCE, SAFE, STATE_OFF,
     tweak_superfetch_apply, tweak_superfetch_revert
 },
 ```
 
-### 3. Implementa as funções
+### 3. Implement the functions
 ```c
 static int tweak_superfetch_apply(void)
 {
@@ -70,29 +70,29 @@ static int tweak_superfetch_revert(void)
 
 ---
 
-## Padrões que já existem no projeto
+## Patterns already used in the project
 
-### Tweak via Registry
+### Registry-based tweak
 ```c
 static int tweak_xxx_apply(void)
 {
     RegResult r = reg_set_dword(
-        HKEY_LOCAL_MACHINE,   // ou HKEY_CURRENT_USER
-        "caminho\\da\\chave",
-        "NomeDoValor", 1
+        HKEY_LOCAL_MACHINE,   // or HKEY_CURRENT_USER
+        "path\\to\\key",
+        "ValueName", 1
     );
     return (r == REG_OK) ? 0 : -1;
 }
 ```
 
-### Tweak via comando externo
+### External-command tweak
 ```c
 static int tweak_xxx_apply(void)
 {
     STARTUPINFOA si = { sizeof(si) };
     PROCESS_INFORMATION pi = {0};
 
-    if (!CreateProcessA(NULL, "comando aqui",
+    if (!CreateProcessA(NULL, "command here",
         NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
         return -1;
 
@@ -103,19 +103,19 @@ static int tweak_xxx_apply(void)
 }
 ```
 
-### Múltiplos comandos no mesmo tweak
+### Multiple commands in the same tweak
 ```c
-// Reinicializa si e pi entre cada CreateProcessA
+// Reset si and pi between each CreateProcessA call
 si = (STARTUPINFOA){ sizeof(si) };
 memset(&pi, 0, sizeof(pi));
-CreateProcessA(NULL, "segundo comando", ...);
+CreateProcessA(NULL, "second command", ...);
 ```
 
 ---
 
-## Tweaks a portar do PowerShell
+## Tweaks still to port from PowerShell
 
-| Tweak | Método | Comando / Chave |
+| Tweak | Method | Command / Key |
 |-------|--------|-----------------|
 | Disable SuperFetch | sc.exe | `sc stop SysMain` + `sc config SysMain start= disabled` |
 | Power Plan Ultra | powercfg | `powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c` |
@@ -126,47 +126,37 @@ CreateProcessA(NULL, "segundo comando", ...);
 
 ---
 
-## Estrutura de ficheiros
+## File layout
 
 ```
 voidtune/
-├── main.c       ← menu CLI — não tocar muito por agora
-├── tweaks.h     ← struct Tweak e enums — lê antes de editar
-├── tweaks.c     ← AQUI vais trabalhar maioritariamente
-├── registry.h   ← API registry — não precisas de editar
-├── registry.c   ← implementação — não precisas de editar
-├── sysinfo.h    ← struct SysInfo
-├── sysinfo.c    ← leitura OS/CPU/RAM
-└── Makefile     ← compilação
+├── main.c       ← CLI menu — don't touch much for now
+├── tweaks.h     ← Tweak struct and enums — read before editing
+├── tweaks.c     ← MOST of your work happens here
+├── registry.h   ← registry API — shouldn't need to edit
+├── registry.c   ← implementation — shouldn't need to edit
+├── sysinfo.h    ← SysInfo struct
+├── sysinfo.c    ← OS/CPU/RAM readout
+└── Makefile     ← build rules
 ```
 
 ---
 
-## Erros comuns
+## Common errors
 
-| Erro | Causa | Fix |
+| Error | Cause | Fix |
 |------|-------|-----|
-| `HKLM undeclared` | Abreviatura PS, não existe em C | Substituir por `HKEY_LOCAL_MACHINE` |
-| `tweaks_apply` retorna -1 | Sem permissão | Correr como Administrador |
-| `make: command not found` | MSYS2 sem make | Usar `mingw32-make` |
-| Tweak não guarda estado | — | Já é automático em `tweaks_apply/revert` |
+| `HKLM undeclared` | PowerShell abbreviation, doesn't exist in C | Use `HKEY_LOCAL_MACHINE` instead |
+| `tweaks_apply` returns -1 | No permission | Run as Administrator |
+| `make: command not found` | MSYS2 without make | Use `mingw32-make` |
+| Tweak doesn't save state | — | Already automatic in `tweaks_apply/revert` |
 
 ---
 
-## Próximos passos por ordem
+## Next steps, in order
 
-1. Porta 3-4 tweaks do PS para `tweaks.c` usando os padrões acima
-2. Adiciona categoria nova ao enum `TweakCategory` em `tweaks.h` se precisares
-3. Adiciona info de GPU ao `sysinfo.c` via registry
-4. Filtragem por categoria no menu CLI
-5. GUI — só depois de 15-20 tweaks portados e lógica sólida
-
----
-
-## Contexto para conversa nova com o Claude
-
-> "Estou a desenvolver o VOIDTUNE C Edition, reescrita em C do meu otimizador Windows.
-> Estrutura: main.c (CLI), tweaks.c/.h (motor com apply/revert por ponteiros de função),
-> registry.c/.h (abstração Win32), sysinfo.c/.h (CPU/RAM/OS).
-> Compila com mingw32-make no MSYS2 UCRT64.
-> Tenho X tweaks e quero agora [o que precisas]."
+1. Port 3-4 tweaks from PowerShell to `tweaks.c` using the patterns above
+2. Add a new category to the `TweakCategory` enum in `tweaks.h` if needed
+3. Add GPU info to `sysinfo.c` via the registry
+4. Category filtering in the CLI menu
+5. GUI — only once 15-20 tweaks are ported and the logic is solid

@@ -1,6 +1,6 @@
 /**
- * backup.c — Backup do Windows Registry
- * Porta de MakeBackup() em core/helpers.ps1 do VOIDTUNE v0.8V
+ * backup.c — Windows Registry backup
+ * Ported from MakeBackup() in core/helpers.ps1 of VOIDTUNE v0.8V
  * Copyright (C) 2026 @OTZPT — GPL v3
  */
 
@@ -9,7 +9,7 @@
 #include <string.h>
 #include <windows.h>
 
-/* Chaves de registry abrangidas pelos tweaks — espelha helpers.ps1 */
+/* Registry keys covered by the tweaks — mirrors helpers.ps1 */
 static const char *BACKUP_KEYS[] = {
     "HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
     "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
@@ -38,12 +38,12 @@ static const char *BACKUP_KEYS[] = {
     "HKCU\\Control Panel\\Accessibility\\StickyKeys",
     "HKCU\\Control Panel\\Accessibility\\ToggleKeys",
     "HKCU\\Control Panel\\Accessibility\\Keyboard Response",
-    NULL  /* sentinela */
+    NULL  /* sentinel */
 };
 
 /*
- * Corre  reg.exe export <key> <tmpfile> /y
- * e devolve 1 se o ficheiro foi criado.
+ * Runs  reg.exe export <key> <tmpfile> /y
+ * and returns 1 if the file was created.
  */
 static int export_key(const char *regkey, const char *tmpfile)
 {
@@ -67,36 +67,36 @@ static int export_key(const char *regkey, const char *tmpfile)
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
 
-    /* Verifica se o ficheiro existe e tem conteúdo */
+    /* Checks the file exists and has content */
     DWORD attr = GetFileAttributesA(tmpfile);
     return (attr != INVALID_FILE_ATTRIBUTES);
 }
 
 /*
- * Lê um ficheiro .reg temporário (UTF-16 LE, como o reg.exe produz),
- * converte para UTF-8 e escreve no ficheiro de destino a partir da
- * linha 3 (salta o cabeçalho "Windows Registry Editor Version 5.00"
- * e a linha em branco que se lhe segue).
+ * Reads a temporary .reg file (UTF-16 LE, as produced by reg.exe),
+ * converts it to UTF-8 and writes it to the destination file starting
+ * at line 3 (skipping the "Windows Registry Editor Version 5.00"
+ * header and the blank line that follows it).
  */
 static void append_key_data(FILE *dest, const char *tmpfile)
 {
-    /* reg.exe escreve UTF-16 LE com BOM */
+    /* reg.exe writes UTF-16 LE with a BOM */
     FILE *f = fopen(tmpfile, "rb");
     if (!f) return;
 
-    /* Lê tudo em wide chars */
+    /* Reads everything as wide chars */
     fseek(f, 0, SEEK_END);
     long fsz = ftell(f);
     rewind(f);
 
     if (fsz < 4) { fclose(f); return; }
 
-    /* Salta BOM FF FE se presente */
+    /* Skips the FF FE BOM if present */
     unsigned char bom[2];
     fread(bom, 1, 2, f);
     if (!(bom[0] == 0xFF && bom[1] == 0xFE)) rewind(f);
 
-    /* Lê como wchar_t */
+    /* Reads as wchar_t */
     long wcount = (fsz / 2) + 1;
     wchar_t *wbuf = (wchar_t *)malloc(wcount * sizeof(wchar_t));
     if (!wbuf) { fclose(f); return; }
@@ -104,7 +104,7 @@ static void append_key_data(FILE *dest, const char *tmpfile)
     wbuf[wread] = L'\0';
     fclose(f);
 
-    /* Converte para UTF-8 */
+    /* Converts to UTF-8 */
     int needed = WideCharToMultiByte(CP_UTF8, 0, wbuf, -1, NULL, 0, NULL, NULL);
     char *utf8 = (char *)malloc(needed + 1);
     if (!utf8) { free(wbuf); return; }
@@ -112,9 +112,9 @@ static void append_key_data(FILE *dest, const char *tmpfile)
     free(wbuf);
 
     /*
-     * Salta as duas primeiras linhas:
-     *   linha 0: "Windows Registry Editor Version 5.00"
-     *   linha 1: linha em branco
+     * Skips the first two lines:
+     *   line 0: "Windows Registry Editor Version 5.00"
+     *   line 1: blank line
      */
     char *p = utf8;
     int skipped = 0;
@@ -130,7 +130,7 @@ static void append_key_data(FILE *dest, const char *tmpfile)
     free(utf8);
 }
 
-/* ── API pública ─────────────────────────────────────────────── */
+/* ── Public API ──────────────────────────────────────────────── */
 
 int backup_create(const char *note, char *out_path, int out_size)
 {
@@ -145,14 +145,14 @@ int backup_create(const char *note, char *out_path, int out_size)
              st.wHour, st.wMinute, st.wSecond,
              note ? note : "voidtune");
 
-    /* Abre o ficheiro de destino em modo texto UTF-8 */
+    /* Opens the destination file in UTF-8 text mode */
     FILE *dest = fopen(fname, "w");
     if (!dest) return 0;
 
-    /* Cabeçalho .reg — escrito uma única vez */
+    /* .reg header — written exactly once */
     fprintf(dest, "Windows Registry Editor Version 5.00\r\n\r\n");
 
-    /* Exporta cada chave */
+    /* Exports each key */
     int i = 0;
     char tmpfile[512];
     while (BACKUP_KEYS[i]) {

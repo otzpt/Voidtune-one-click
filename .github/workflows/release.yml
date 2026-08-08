@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mingw-w64
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
+
+      - name: Build voidtune.exe
+        run: |
+          x86_64-w64-mingw32-gcc -Wall -Wextra -Wno-unused-parameter -O2 -std=c11 \
+            main.c tweaks.c registry.c sysinfo.c backup.c services.c \
+            -o voidtune.exe -ladvapi32 -lole32
+          x86_64-w64-mingw32-strip voidtune.exe
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: voidtune.exe
+          name: VOIDTUNE Lite ${{ github.ref_name }}
+          generate_release_notes: true

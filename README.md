@@ -15,7 +15,7 @@ The flagship VOIDTUNE (C# / WinUI 3) is a rich GUI with DevTools, live monitors 
 
 ## Use
 1. Run `voidtune.exe` **as Administrator**.
-2. **[1] OTIMIZAR AGORA** — applies every **SAFE** tweak in one pass (fully reversible).
+2. **[1] OPTIMIZE NOW** — applies every **SAFE** tweak in one pass (fully reversible).
 3. **[2] Tweaks** — toggle individual tweaks by hand (SAFE + EXTREME).
 4. **[3] System Info** — CPU / RAM / OS + how many tweaks are active.
 5. Reboot for changes that need it.

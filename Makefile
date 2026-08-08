@@ -1,11 +1,11 @@
 # VOIDTUNE — One-Click Optimizer (native C edition) — Makefile
 # Copyright (C) 2026 @OTZPT — GPL v3
 #
-# Compilar:  make
-# Limpar:    make clean
-# Correr:    make run
+# Build:   make
+# Clean:   make clean
+# Run:     make run
 #
-# Requer MSYS2 UCRT64:
+# Requires MSYS2 UCRT64:
 #   pacman -S mingw-w64-ucrt-x86_64-gcc
 
 CC      = gcc
@@ -15,14 +15,14 @@ TARGET  = voidtune.exe
 SRCS    = main.c tweaks.c registry.c sysinfo.c backup.c services.c
 OBJS    = $(SRCS:.c=.o)
 
-# ── Regras ───────────────────────────────────────────────────────
+# ── Rules ────────────────────────────────────────────────────────
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
 	@echo ""
-	@echo "  Compilado: $(TARGET)"
+	@echo "  Built: $(TARGET)"
 	@echo ""
 
 %.o: %.c
@@ -35,7 +35,7 @@ clean:
 run: $(TARGET)
 	./$(TARGET)
 
-# Strip do executável final (reduz ~500KB)
+# Strips the final executable (saves ~500KB)
 release: $(TARGET)
 	strip $(TARGET)
 	@echo "  Release: $(TARGET) (stripped)"
