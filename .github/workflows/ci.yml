@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source and docs stay ASCII
+        run: "! git ls-files | grep -v -E '\\.(png|ico)$' | xargs grep -nP '[^\\x00-\\x7F]'"
+      - name: Build and test
+        run: make test
+
+  windows-cross:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mingw-w64
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
+      - name: Build voidtune.exe
+        run: |
+          x86_64-w64-mingw32-gcc -Wall -Wextra -Wno-unused-parameter -O2 -std=c11 \
+            src/main.c src/tweaks.c src/win/*.c \
+            -o voidtune.exe -ladvapi32 -lole32

@@ -1,7 +1,7 @@
 /**
- * backup.c — Windows Registry backup
+ * backup.c - Windows Registry backup
  * Ported from MakeBackup() in core/helpers.ps1 of VOIDTUNE v0.8V
- * Copyright (C) 2026 @OTZPT — GPL v3
+ * Copyright (C) 2026 @OTZPT - GPL v3
  */
 
 #include "backup.h"
@@ -9,7 +9,7 @@
 #include <string.h>
 #include <windows.h>
 
-/* Registry keys covered by the tweaks — mirrors helpers.ps1 */
+/* Registry keys covered by the tweaks - mirrors helpers.ps1 */
 static const char *BACKUP_KEYS[] = {
     "HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl",
     "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers",
@@ -130,7 +130,7 @@ static void append_key_data(FILE *dest, const char *tmpfile)
     free(utf8);
 }
 
-/* ── Public API ──────────────────────────────────────────────── */
+/* -- Public API ------------------------------------------------ */
 
 int backup_create(const char *note, char *out_path, int out_size)
 {
@@ -149,7 +149,7 @@ int backup_create(const char *note, char *out_path, int out_size)
     FILE *dest = fopen(fname, "w");
     if (!dest) return 0;
 
-    /* .reg header — written exactly once */
+    /* .reg header - written exactly once */
     fprintf(dest, "Windows Registry Editor Version 5.00\r\n\r\n");
 
     /* Exports each key */

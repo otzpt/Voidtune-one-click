@@ -1,7 +1,7 @@
 /**
- * services.h — Windows service management
+ * services.h - Windows service management
  * Ported from modules/data.ps1 ($SVCS_DATA) of VOIDTUNE v0.8V
- * Copyright (C) 2026 @OTZPT — GPL v3
+ * Copyright (C) 2026 @OTZPT - GPL v3
  */
 
 #ifndef SERVICES_H

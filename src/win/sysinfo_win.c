@@ -1,17 +1,18 @@
 /**
- * sysinfo.c — System info collection implementation
+ * sysinfo.c - System info collection implementation
  */
 
-#include "sysinfo.h"
+#include "../sysinfo.h"
 #include <stdio.h>
 #include <string.h>
+#include <windows.h>
 
 void sysinfo_get(SysInfo *out)
 {
     if (!out) return;
     memset(out, 0, sizeof(SysInfo));
 
-    /* ── OS name ─────────────────────────────────────────────── */
+    /* -- OS name ----------------------------------------------- */
     HKEY hKey;
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
         "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
@@ -23,7 +24,7 @@ void sysinfo_get(SysInfo *out)
         RegCloseKey(hKey);
     }
 
-    /* ── CPU name (via registry) ─────────────────────────────── */
+    /* -- CPU name (via registry) ------------------------------- */
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
         "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
         0, KEY_READ, &hKey) == ERROR_SUCCESS)
@@ -34,14 +35,14 @@ void sysinfo_get(SysInfo *out)
         RegCloseKey(hKey);
     }
 
-    /* ── Cores and threads ───────────────────────────────────── */
+    /* -- Cores and threads ------------------------------------- */
     SYSTEM_INFO si;
     GetSystemInfo(&si);
     out->cpu_threads = (int)si.dwNumberOfProcessors;
-    /* physical cores would require WMI — use thread count as an approximation for now */
+    /* physical cores would require WMI - use thread count as an approximation for now */
     out->cpu_cores = out->cpu_threads;
 
-    /* ── RAM ────────────────────────────────────────────────── */
+    /* -- RAM -------------------------------------------------- */
     MEMORYSTATUSEX mem;
     mem.dwLength = sizeof(mem);
     if (GlobalMemoryStatusEx(&mem)) {
@@ -49,7 +50,7 @@ void sysinfo_get(SysInfo *out)
         out->ram_free_mb  = mem.ullAvailPhys / (1024 * 1024);
     }
 
-    /* ── Admin check ────────────────────────────────────────── */
+    /* -- Admin check ------------------------------------------ */
     BOOL is_admin = FALSE;
     HANDLE token = NULL;
     if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token)) {

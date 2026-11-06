@@ -1,22 +1,19 @@
 /**
- * tweaks.c — Tweak engine implementation
+ * tweaks_win.c - Windows tweak table and implementations
  *
- * To add a new tweak:
- *   1. Declare the apply/revert functions up top (static int tweak_xxx_apply, etc.)
- *   2. Implement them
- *   3. Add the entry to g_tweaks[]
+ * To add a tweak:
+ *   1. Declare the apply/revert functions below.
+ *   2. Implement them at the end of this file.
+ *   3. Add the entry to g_tweaks[].
  */
 
-#include "tweaks.h"
+#include "../tweaks.h"
 #include "registry.h"
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
 
-#define STATE_FILE "voidtune_state.txt"
-#define MAX_TWEAKS 64
-
-/* ── Tweak function prototypes ───────────────────────────────── */
+/* -- Tweak function prototypes --------------------------------- */
 static int tweak_game_mode_apply(void);
 static int tweak_game_mode_revert(void);
 static int tweak_nagle_apply(void);
@@ -54,7 +51,7 @@ static int tweak_large_system_cache_revert(void);
 static int tweak_tcp_autotuning_apply(void);
 static int tweak_tcp_autotuning_revert(void);
 
-/* ── Tweak array — add new entries here ──────────────────────── */
+/* -- Tweak array - add new entries here ------------------------ */
 static Tweak g_tweaks[] = {
     {
         1, "Game Mode",
@@ -161,120 +158,20 @@ static Tweak g_tweaks[] = {
     {
         18, "TCP Auto-Tuning Reset",
         "Resets TCP receive-window auto-tuning to the Windows default "
-        "(normal) — fixes it if another tool, VPN client, or router "
+        "(normal) - fixes it if another tool, VPN client, or router "
         "compatibility mode left it disabled or restricted",
         CAT_NETWORK, SAFE, STATE_OFF,
         tweak_tcp_autotuning_apply, tweak_tcp_autotuning_revert
     },
 };
 
-static int g_count = sizeof(g_tweaks) / sizeof(g_tweaks[0]);
-
-/* ── Public API ──────────────────────────────────────────────── */
-
-void tweaks_init(void)
+Tweak *platform_tweaks(int *count)
 {
-    tweaks_load_state();
+    *count = (int)(sizeof(g_tweaks) / sizeof(g_tweaks[0]));
+    return g_tweaks;
 }
 
-int tweaks_count(void)
-{
-    return g_count;
-}
-
-Tweak *tweaks_get(int index)
-{
-    if (index < 0 || index >= g_count)
-        return NULL;
-    return &g_tweaks[index];
-}
-
-int tweaks_apply(int index)
-{
-    Tweak *t = tweaks_get(index);
-    if (!t) return -1;
-
-    int res = t->apply();
-    if (res == 0) {
-        t->state = STATE_ON;
-        tweaks_save_state();
-    }
-    return res;
-}
-
-int tweaks_revert(int index)
-{
-    Tweak *t = tweaks_get(index);
-    if (!t) return -1;
-
-    int res = t->revert();
-    if (res == 0) {
-        t->state = STATE_OFF;
-        tweaks_save_state();
-    }
-    return res;
-}
-
-void tweaks_save_state(void)
-{
-    FILE *f = fopen(STATE_FILE, "w");
-    if (!f) return;
-
-    for (int i = 0; i < g_count; i++)
-        fprintf(f, "%s=%d\n", g_tweaks[i].name, (int)g_tweaks[i].state);
-
-    fclose(f);
-}
-
-void tweaks_load_state(void)
-{
-    FILE *f = fopen(STATE_FILE, "r");
-    if (!f) return;  /* no file = everything OFF, that's fine */
-
-    char line[256];
-    while (fgets(line, sizeof(line), f)) {
-        /* format: "Game Mode=1" */
-        char *eq = strchr(line, '=');
-        if (!eq) continue;
-
-        *eq = '\0';  /* splits the string into name + value */
-        int val = atoi(eq + 1);
-
-        /* looks up the tweak by name */
-        for (int i = 0; i < g_count; i++) {
-            if (strcmp(g_tweaks[i].name, line) == 0) {
-                g_tweaks[i].state = val ? STATE_ON : STATE_OFF;
-                break;
-            }
-        }
-    }
-
-    fclose(f);
-}
-
-const char *tweak_category_str(TweakCategory c)
-{
-    switch (c) {
-        case CAT_PERFORMANCE: return "PERFORMANCE";
-        case CAT_PRIVACY:     return "PRIVACY";
-        case CAT_NETWORK:     return "NETWORK";
-        case CAT_SERVICES:    return "SERVICES";
-        case CAT_VISUALS:     return "VISUALS";
-        default:              return "UNKNOWN";
-    }
-}
-
-const char *tweak_level_str(TweakLevel l)
-{
-    return (l == SAFE) ? "SAFE" : "EXTREME";
-}
-
-const char *tweak_state_str(TweakState s)
-{
-    return (s == STATE_ON) ? "ON" : "OFF";
-}
-
-/* ── Helper to run commands ──────────────────────────────────── */
+/* -- Helper to run commands ------------------------------------ */
 static int run_command(const char *cmd)
 {
     STARTUPINFOA si = { sizeof(si) };
@@ -290,7 +187,7 @@ static int run_command(const char *cmd)
     return 0;
 }
 
-/* ── Tweak implementations ───────────────────────────────────── */
+/* -- Tweak implementations ------------------------------------- */
 
 static int tweak_game_mode_apply(void)
 {
@@ -498,7 +395,7 @@ static int tweak_cortana_revert(void)
     return (r == REG_OK) ? 0 : -1;
 }
 
-/* ── Newer tweaks ─────────────────────────────────────────────── */
+/* -- Newer tweaks ----------------------------------------------- */
 
 static int tweak_gpu_priority_apply(void)
 {
@@ -662,7 +559,7 @@ static int tweak_large_system_cache_revert(void)
  * "normal" IS the real Windows out-of-box default (verified against
  * Microsoft's documented autotuninglevel tiers: disabled < highlyrestricted
  * < restricted < normal < experimental). There is no safe tier above
- * "normal" — "experimental" is explicitly documented as not recommended
+ * "normal" - "experimental" is explicitly documented as not recommended
  * for general use and can degrade performance in common scenarios, so it
  * does not belong in a SAFE one-click tweak. The real, honest job of this
  * tweak is fixing a receive-window scaling setting that some third-party
@@ -673,7 +570,7 @@ static int tweak_large_system_cache_revert(void)
  * tweaks above are (apply pushes a "better" value, revert restores the
  * pre-tweak default). netsh's global autotuning level has no state
  * capture here, unlike the registry-backed tweaks, so revert steps back
- * one tier to "restricted" — a distinct, still-documented-safe value —
+ * one tier to "restricted" - a distinct, still-documented-safe value -
  * rather than restoring the literal prior setting.
  *
  * SIMPLIFICATION: no real prior-state capture. Ceiling: revert always

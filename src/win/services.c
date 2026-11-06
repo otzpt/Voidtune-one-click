@@ -1,7 +1,7 @@
 /**
- * services.c — Windows service management
+ * services.c - Windows service management
  * Ported from modules/data.ps1 ($SVCS_DATA) of VOIDTUNE v0.8V
- * Copyright (C) 2026 @OTZPT — GPL v3
+ * Copyright (C) 2026 @OTZPT - GPL v3
  */
 
 #include "services.h"
@@ -9,54 +9,54 @@
 #include <string.h>
 #include <windows.h>
 
-/* ── Service list — mirrors $SVCS_DATA from the PowerShell edition ─ */
+/* -- Service list - mirrors $SVCS_DATA from the PowerShell edition - */
 static const struct {
     const char *name;
     const char *desc;
     int         careful;   /* 1 = show an extra warning */
 } g_svcs[] = {
     /* Telemetry */
-    { "DiagTrack",          "Windows Telemetry — safe to disable",              0 },
-    { "dmwappushservice",   "WAP Push Routing — telemetry relay",               0 },
+    { "DiagTrack",          "Windows Telemetry - safe to disable",              0 },
+    { "dmwappushservice",   "WAP Push Routing - telemetry relay",               0 },
     /* Prefetch / cache */
-    { "SysMain",            "Superfetch — useless on SSD",                      0 },
+    { "SysMain",            "Superfetch - useless on SSD",                      0 },
     /* Indexing */
-    { "WSearch",            "Windows Search indexing — kills HDD I/O",          0 },
+    { "WSearch",            "Windows Search indexing - kills HDD I/O",          0 },
     /* Printing */
-    { "Spooler",            "Print Spooler — disable if no printer",            0 },
+    { "Spooler",            "Print Spooler - disable if no printer",            0 },
     /* Security */
-    { "RemoteRegistry",     "Remote Registry — security risk",                  0 },
+    { "RemoteRegistry",     "Remote Registry - security risk",                  0 },
     /* UI */
-    { "TabletInputService", "Tablet PC Input — irrelevant on desktop",          0 },
+    { "TabletInputService", "Tablet PC Input - irrelevant on desktop",          0 },
     /* Legacy */
-    { "Fax",                "Fax service — nobody uses this",                   0 },
-    { "MapsBroker",         "Offline Maps — unused on most PCs",                0 },
-    { "RetailDemo",         "Store Display Mode — only for retail PCs",         0 },
+    { "Fax",                "Fax service - nobody uses this",                   0 },
+    { "MapsBroker",         "Offline Maps - unused on most PCs",                0 },
+    { "RetailDemo",         "Store Display Mode - only for retail PCs",         0 },
     { "WMPNetworkSvc",      "Windows Media Player sharing",                     0 },
     /* Time */
-    { "W32Time",            "Time sync — safe to disable offline",              0 },
+    { "W32Time",            "Time sync - safe to disable offline",              0 },
     /* Bluetooth */
-    { "bthserv",            "Bluetooth — disable if no BT devices",             0 },
+    { "bthserv",            "Bluetooth - disable if no BT devices",             0 },
     /* Windows Update relay */
-    { "DoSvc",              "Delivery Optimization — P2P Update relay",         0 },
+    { "DoSvc",              "Delivery Optimization - P2P Update relay",         0 },
     { "BITS",               "Background Intelligent Transfer",                  0 },
     /* Biometrics */
-    { "WbioSrvc",           "Windows Biometric — disable if no fingerprint",    0 },
+    { "WbioSrvc",           "Windows Biometric - disable if no fingerprint",    0 },
     /* Sensors */
-    { "SensorService",      "Sensor Aggregator — disable on desktop",           0 },
-    { "SensrSvc",           "Sensor Monitoring — disable on desktop",           0 },
+    { "SensorService",      "Sensor Aggregator - disable on desktop",           0 },
+    { "SensrSvc",           "Sensor Monitoring - disable on desktop",           0 },
     /* Xbox */
     { "XboxGip",            "Xbox Game Input Protocol",                         0 },
     { "XblAuthManager",     "Xbox Live Authentication",                         0 },
     { "XblGameSave",        "Xbox Game Save sync",                              0 },
     { "XboxNetApiSvc",      "Xbox Network API",                                 0 },
     /* Careful */
-    { "wuauserv",           "Windows Update — disable with caution",            1 },
+    { "wuauserv",           "Windows Update - disable with caution",            1 },
 };
 
 static int g_count = (int)(sizeof(g_svcs) / sizeof(g_svcs[0]));
 
-/* ── Helper: runs cmd.exe /c and returns the exit code ────────── */
+/* -- Helper: runs cmd.exe /c and returns the exit code ---------- */
 static int run_cmd(const char *cmd)
 {
     char full[512];
@@ -79,7 +79,7 @@ static int run_cmd(const char *cmd)
     return (int)exit_code;
 }
 
-/* ── SCM query ───────────────────────────────────────────────── */
+/* -- SCM query ------------------------------------------------- */
 static ServiceState query_state(const char *name)
 {
     SC_HANDLE scm = OpenSCManagerA(NULL, NULL, SC_MANAGER_CONNECT);
@@ -120,7 +120,7 @@ static ServiceState query_state(const char *name)
     return SVC_STOPPED;
 }
 
-/* ── Public API ──────────────────────────────────────────────── */
+/* -- Public API ------------------------------------------------ */
 
 int services_count(void) { return g_count; }
 

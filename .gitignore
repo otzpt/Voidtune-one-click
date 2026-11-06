@@ -1,7 +1,9 @@
-# Compiled objects / binaries — build from source instead
+# Compiled objects / binaries: build from source instead
 *.o
 *.obj
 *.exe
+voidtune
+tests/test_distro
 
 # Runtime state / backups written by the app
 voidtune_state.txt

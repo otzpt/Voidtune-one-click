@@ -1,43 +1,56 @@
-# VOIDTUNE — One-Click Optimizer (native C edition) — Makefile
-# Copyright (C) 2026 @OTZPT — GPL v3
+# VOIDTUNE One-Click - Makefile
+# Copyright (C) 2026 @OTZPT - GPL v3
 #
-# Build:   make
-# Clean:   make clean
-# Run:     make run
+#   make            build for the current OS (voidtune / voidtune.exe)
+#   make test       Linux only: distro parser + tweak engine checks
+#   make release    build + strip
+#   make clean
 #
-# Requires MSYS2 UCRT64:
-#   pacman -S mingw-w64-ucrt-x86_64-gcc
+# Windows: MSYS2 UCRT64 with  pacman -S mingw-w64-ucrt-x86_64-gcc make
+# Linux:   gcc and make from your distro (build-essential, base-devel,
+#          or xbps-install base-devel)
 
 CC      = gcc
 CFLAGS  = -Wall -Wextra -Wno-unused-parameter -O2 -std=c11
-LDFLAGS = -ladvapi32 -lole32
-TARGET  = voidtune.exe
-SRCS    = main.c tweaks.c registry.c sysinfo.c backup.c services.c
-OBJS    = $(SRCS:.c=.o)
+COMMON  = src/main.c src/tweaks.c
 
-# ── Rules ────────────────────────────────────────────────────────
+ifeq ($(OS),Windows_NT)
+TARGET  = voidtune.exe
+SRCS    = $(COMMON) src/win/platform_win.c src/win/tweaks_win.c \
+          src/win/registry.c src/win/sysinfo_win.c src/win/backup.c \
+          src/win/services.c
+LDFLAGS = -ladvapi32 -lole32
+RM      = del /Q
+else
+TARGET  = voidtune
+SRCS    = $(COMMON) src/linux/platform_linux.c src/linux/tweaks_linux.c \
+          src/linux/sysinfo_linux.c src/linux/distro.c
+LDFLAGS =
+RM      = rm -f
+CFLAGS += -D_POSIX_C_SOURCE=200809L
+endif
 
 all: $(TARGET)
 
-$(TARGET): $(OBJS)
-	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
-	@echo ""
-	@echo "  Built: $(TARGET)"
-	@echo ""
+$(TARGET): $(SRCS)
+	$(CC) $(CFLAGS) $(SRCS) -o $(TARGET) $(LDFLAGS)
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-clean:
-	del /Q *.o $(TARGET) backup_*.reg voidtune_state.txt 2>nul || \
-	rm -f *.o $(TARGET) backup_*.reg voidtune_state.txt
+release: $(TARGET)
+	strip $(TARGET)
 
 run: $(TARGET)
 	./$(TARGET)
 
-# Strips the final executable (saves ~500KB)
-release: $(TARGET)
-	strip $(TARGET)
-	@echo "  Release: $(TARGET) (stripped)"
+ifneq ($(OS),Windows_NT)
+test: $(TARGET) tests/test_distro
+	./tests/test_distro
+	sh tests/test_linux_tweaks.sh ./$(TARGET)
 
-.PHONY: all clean run release
+tests/test_distro: tests/test_distro.c src/linux/distro.c
+	$(CC) $(CFLAGS) -Isrc/linux $^ -o $@
+endif
+
+clean:
+	$(RM) $(TARGET) tests/test_distro backup_*.reg voidtune_state.txt
+
+.PHONY: all release run test clean

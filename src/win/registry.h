@@ -1,5 +1,5 @@
 /**
- * registry.h — Windows Registry abstraction
+ * registry.h - Windows Registry abstraction
  * All registry operations go through here.
  * Never call RegSetValueEx directly anywhere else in the codebase.
  */

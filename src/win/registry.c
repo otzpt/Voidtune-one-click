@@ -1,12 +1,12 @@
 /**
- * registry.c — Windows Registry abstraction implementation
+ * registry.c - Windows Registry abstraction implementation
  * Compiled: gcc -Wall -Wextra -o voidtune *.c -ladvapi32
  */
 
 #include "registry.h"
 #include <stdio.h>
 
-/* ── Implementation ──────────────────────────────────────────── */
+/* -- Implementation -------------------------------------------- */
 
 RegResult reg_set_dword(HKEY hive, const char *path,
                         const char *name, DWORD value)

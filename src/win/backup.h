@@ -1,7 +1,7 @@
 /**
- * backup.h — Windows Registry backup
+ * backup.h - Windows Registry backup
  * Ported from MakeBackup() in core/helpers.ps1 of VOIDTUNE v0.8V
- * Copyright (C) 2026 @OTZPT — GPL v3
+ * Copyright (C) 2026 @OTZPT - GPL v3
  *
  * Exports the registry keys touched by the tweaks to a timestamped
  * .reg file, which can be imported at any time to restore the prior

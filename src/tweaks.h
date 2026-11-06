@@ -1,5 +1,5 @@
 /**
- * tweaks.h — VOIDTUNE C tweak engine
+ * tweaks.h - VOIDTUNE C tweak engine
  *
  * Each tweak is a struct with a name, description, category,
  * and two function pointers: apply() and revert().
@@ -32,9 +32,10 @@ typedef enum {
 } TweakState;
 
 /*
- * Tweak — represents a single tweak
+ * Tweak - represents a single tweak
  *
- * apply()  : applies the tweak, returns 0 on success
+ * apply()  : applies the tweak, returns 0 on success, TWEAK_NA if not
+ *            applicable on this system, -1 on failure
  * revert() : reverts the tweak, returns 0 on success
  */
 typedef struct {
@@ -48,9 +49,12 @@ typedef struct {
     int         (*revert)(void);
 } Tweak;
 
-/* ── Public API ──────────────────────────────────────────────── */
+/* -- Public API ------------------------------------------------ */
 
-/* Initializes the engine — loads state from disk */
+/* apply()/revert() return value: tweak does not apply to this system */
+#define TWEAK_NA 1
+
+/* Initializes the engine - loads state from disk */
 void tweaks_init(void);
 
 /* Total number of available tweaks */
@@ -59,10 +63,10 @@ int tweaks_count(void);
 /* Returns a pointer to the tweak at this index (0-based) */
 Tweak *tweaks_get(int index);
 
-/* Applies a tweak by index — updates state and saves to disk */
+/* Applies a tweak by index - updates state and saves to disk */
 int tweaks_apply(int index);
 
-/* Reverts a tweak by index — updates state and saves to disk */
+/* Reverts a tweak by index - updates state and saves to disk */
 int tweaks_revert(int index);
 
 /* Saves all states to voidtune_state.txt */
