@@ -39,4 +39,11 @@ jobs:
             voidtune.exe
             voidtune-linux-x86_64
           name: VOIDTUNE One-Click ${{ github.ref_name }}
+          prerelease: true
+          body: |
+            **PRE-RELEASE. USE AT YOUR OWN RISK.**
+
+            This tool changes system settings: the Windows registry and services, and on Linux kernel parameters (sysctl), CPU governors and systemd services. It is early software and only partly tested. It is provided "as is", without warranty of any kind. The author is not responsible for data loss, instability, an unbootable system, or any other damage. Back up your data and create a restore point or snapshot before running it. See GPL v3 sections 15 and 16.
+
+            Linux: run `sudo ./voidtune-linux-x86_64`. Dry run without root: `VOIDTUNE_DRY_RUN=1 ./voidtune-linux-x86_64`.
           generate_release_notes: true

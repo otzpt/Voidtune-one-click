@@ -1,5 +1,8 @@
 # VOIDTUNE One-Click (native C edition)
 
+> **PRE-RELEASE. USE AT YOUR OWN RISK.**
+> VOIDTUNE One-Click changes system settings: the Windows registry and services, and on Linux kernel parameters (sysctl), CPU governors and systemd services. It is early software and is only partly tested (see Verification below). It is provided "as is", without warranty of any kind. The author is not responsible for data loss, instability, an unbootable system, or any other damage. Back up your data and create a restore point or snapshot before running it. See the GPL v3 sections 15 and 16 in [LICENSE](LICENSE).
+
 Tiny, zero-dependency automatic optimizer for **Windows** and **Linux**. Run it, pick **Optimize Now**, done. Every tweak is reversible.
 
 | | |
