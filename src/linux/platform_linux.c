@@ -2,8 +2,8 @@
  * platform_linux.c - terminal and path helpers for Linux
  *
  * State directory: /var/lib/voidtune (root). Overridable with
- * VOIDTUNE_STATE_DIR. In dry-run mode (VOIDTUNE_DRY_RUN set) the state
- * lives under /tmp so a non-root dry run never touches system paths.
+ * VOIDTUNE_STATE_DIR. In dry-run mode (VOIDTUNE_DRY_RUN set) nothing is
+ * created or written: no state file, no directory, no /tmp path.
  */
 
 #include "../platform.h"
@@ -38,15 +38,17 @@ const char *lx_state_dir(void)
     static char dir[256];
     const char *env = getenv("VOIDTUNE_STATE_DIR");
     if (env && *env)        snprintf(dir, sizeof(dir), "%s", env);
-    else if (lx_dry_run())  snprintf(dir, sizeof(dir), "/tmp/voidtune-dryrun");
     else                    snprintf(dir, sizeof(dir), "/var/lib/voidtune");
-    mkdir(dir, 0755);   /* parent must exist; failure surfaces when the file is written */
+    /* parent must exist; failure surfaces when the file is written */
+    if (!lx_dry_run()) mkdir(dir, 0755);
     return dir;
 }
 
 const char *platform_state_file(void)
 {
     static char path[300];
+    /* Dry run without an explicit state dir: keep state in memory only. */
+    if (lx_dry_run() && !getenv("VOIDTUNE_STATE_DIR")) return NULL;
     snprintf(path, sizeof(path), "%s/voidtune_state.txt", lx_state_dir());
     return path;
 }

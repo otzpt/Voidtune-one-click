@@ -22,7 +22,8 @@ void plat_sleep_ms(int ms);
 /* Returns the tweak table for this OS and stores its length in *count. */
 Tweak *platform_tweaks(int *count);
 
-/* Path of the file that records which tweaks are ON. */
+/* Path of the file that records which tweaks are ON, or NULL to keep
+ * state in memory only (Linux dry run). */
 const char *platform_state_file(void);
 
 /* Message shown when apply/revert fails (privilege hint). */

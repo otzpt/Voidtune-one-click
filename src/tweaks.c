@@ -63,6 +63,7 @@ int tweaks_revert(int index)
 void tweaks_save_state(void)
 {
     const char *path = platform_state_file();
+    if (!path) return;
     FILE *f = fopen(path, "w");
     if (!f) {
         fprintf(stderr, "voidtune: cannot write state file %s\n", path);
@@ -77,7 +78,8 @@ void tweaks_save_state(void)
 
 void tweaks_load_state(void)
 {
-    FILE *f = fopen(platform_state_file(), "r");
+    const char *path = platform_state_file();
+    FILE *f = path ? fopen(path, "r") : NULL;
     if (!f) return;  /* no file = everything OFF, that's fine */
 
     char line[256];
