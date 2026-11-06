@@ -19,6 +19,8 @@ Linux: `sudo ./voidtune`
 3. **[3] System Information** shows OS, CPU, RAM and, on Linux, the detected distro family and init system.
 4. **[4] Revert all tweaks** restores every active tweak.
 
+The Windows service manager (`src/win/services.c`) is built in but has no menu entry yet.
+
 Before one-click on Windows, a registry backup (`backup_*.reg`) is written to the current folder. State is saved to `voidtune_state.txt` (Windows) or `/var/lib/voidtune/voidtune_state.txt` (Linux).
 
 ## Linux tweaks
@@ -40,7 +42,12 @@ Sysctl tweaks apply live and write `/etc/sysctl.d/99-voidtune-<name>.conf` so th
 
 Not touched: bootloader, kernel parameters, packages, drivers, DNS, display manager.
 
-Verification so far: the tweak engine was run on Void Linux (dry run on the real system, apply/revert against fake `/proc` trees). The other distros are covered by the os-release parser test only, not by a run on each.
+Verification so far:
+
+- CI builds the Linux binary and runs `make test` (os-release parser for all six distros, apply/revert against fake `/proc` and `/sys` trees).
+- CI cross-compiles `voidtune.exe` with mingw-w64. The Windows build has been compiled but not run by me after the `src/` reorganization.
+- The Linux binary was run on Void Linux only (dry run on the real system). Arch, CachyOS, Ubuntu, Linux Mint and Zorin OS are covered by the os-release parser test, not by a run on each.
+- Not covered by any test: BBR (needs the `tcp_bbr` module), the systemd tweaks (`whoopsie`, `fstrim.timer`).
 
 Dry run (no changes, works without root):
 
